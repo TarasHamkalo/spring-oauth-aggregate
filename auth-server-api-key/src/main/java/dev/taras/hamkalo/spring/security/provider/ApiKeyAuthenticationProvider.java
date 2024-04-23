@@ -18,7 +18,8 @@ public class ApiKeyAuthenticationProvider implements AuthenticationProvider {
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
     var apiAuth = (ApiKeyAuthentication) authentication;
     if (key.equals(apiAuth.getKey())) {
-      return new ApiKeyAuthentication(null, true);
+      apiAuth.setAuthenticated(true);
+      return apiAuth;
     }
 
     throw new BadCredentialsException("Api key is not valid");

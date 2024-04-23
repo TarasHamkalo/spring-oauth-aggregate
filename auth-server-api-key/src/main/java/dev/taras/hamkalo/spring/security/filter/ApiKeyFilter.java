@@ -33,7 +33,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
       return;
     }
 
-    var inAuth = new ApiKeyAuthentication(requestKey, false);
+    var inAuth = new ApiKeyAuthentication(null, requestKey);
 
     var outAuth = authenticationManager.authenticate(inAuth);
 

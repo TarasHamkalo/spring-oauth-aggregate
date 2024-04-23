@@ -6,10 +6,6 @@ application {
     mainClass = 'dev.taras.hamkalo.spring.Application'
 }
 
-
-repositories {
-    mavenCentral()
-}
 dependencies {
     runtimeOnly "org.postgresql:postgresql:$postgresqlVersion"
 
