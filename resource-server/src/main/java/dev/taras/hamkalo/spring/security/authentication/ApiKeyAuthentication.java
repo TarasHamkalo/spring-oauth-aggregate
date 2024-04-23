@@ -28,12 +28,21 @@ public class ApiKeyAuthentication implements Authentication {
   }
 
   @Override
-  public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {}
-
-  @Override
   public String getName() {
     return "I am NULL";
   }
+
+  @Override
+  public Object getPrincipal() {
+    /*
+      before passing to controller,
+      SecurityParams resolver extracts principal from authentication
+     */
+    return this;
+  }
+
+  @Override
+  public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {}
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -47,11 +56,6 @@ public class ApiKeyAuthentication implements Authentication {
 
   @Override
   public Object getDetails() {
-    return null;
-  }
-
-  @Override
-  public Object getPrincipal() {
     return null;
   }
 
