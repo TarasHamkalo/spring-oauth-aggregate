@@ -1,7 +1,8 @@
 rootProject.name = 'spring'
 
 [
-    'auth-server-api-key'
+    'auth-server-api-key',
+    'oauth-server'
 ] . forEach {
     include it
 }
