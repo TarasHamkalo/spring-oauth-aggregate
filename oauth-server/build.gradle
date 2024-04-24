@@ -3,11 +3,16 @@ plugins {
 }
 
 application {
-    mainClass = 'dev.taras.hamkalo.spring.Application'
+    mainClass = 'dev.taras.hamkalo.spring.auth.oauth.Application'
 }
 
 dependencies {
     implementation 'org.springframework.security:spring-security-oauth2-authorization-server'
+
+    runtimeOnly "org.postgresql:postgresql:$postgresqlVersion"
+
+    implementation "com.github.dozermapper:dozer-core:$dozerMapperVersion"
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
 }

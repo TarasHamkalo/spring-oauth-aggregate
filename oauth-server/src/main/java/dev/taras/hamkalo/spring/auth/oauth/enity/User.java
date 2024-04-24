@@ -1,4 +1,4 @@
-package dev.taras.hamkalo.spring.auth.key.enity;
+package dev.taras.hamkalo.spring.auth.oauth.enity;
 
 import jakarta.persistence.*;
 import lombok.*;
