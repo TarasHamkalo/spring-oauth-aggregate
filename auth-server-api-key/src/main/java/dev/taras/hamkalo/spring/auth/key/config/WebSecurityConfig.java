@@ -49,6 +49,7 @@ public class WebSecurityConfig {
 
 //  @Bean
 //  AuthenticationManager authenticationManager() {
+//    return http.getSharedObject(AuthenticationManager.class);
 //    return new ProviderManager(authenticationProvider());
 //  }
 

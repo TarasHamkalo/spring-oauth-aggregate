@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
+import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
@@ -31,6 +32,7 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -39,6 +41,8 @@ import java.security.KeyPair;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 @Configuration
@@ -52,8 +56,22 @@ public class SecurityConfigV2 {
 
     // Create basic Open id scopes, so that i should not create them
     // also creates a resource server endpoints which should be secured
+
     http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-      .oidc(Customizer.withDefaults());
+      .oidc(oidcConfigurer -> oidcConfigurer
+        // /userinfo endpoint response configuration
+        .userInfoEndpoint(configurer -> configurer
+//          .userInfoMapper(context ->
+//            new OidcUserInfo(Map.of("name", context.getAuthentication().getName()))
+//          )
+          .userInfoMapper(context -> {
+            if (context.getAuthentication().getPrincipal() instanceof JwtAuthenticationToken token) {
+              return new OidcUserInfo(token.getToken().getClaims());
+            }
+
+            return new OidcUserInfo(Collections.emptyMap());
+          })
+        ));
 
     http
       // Redirect to the login page when not authenticated from the
@@ -62,27 +80,21 @@ public class SecurityConfigV2 {
         .defaultAuthenticationEntryPointFor(
           new LoginUrlAuthenticationEntryPoint("/login"),
           new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
-        )
-      )
+        ))
       .oauth2ResourceServer(resourceServer -> resourceServer
-				.jwt(Customizer.withDefaults()));
+        .jwt(Customizer.withDefaults()));
 
     return http.build();
   }
 
   @Bean
   @Order(2)
-  public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
-    throws Exception {
-    http
+  public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+    return http
       .authorizeHttpRequests(authorize -> authorize
-        .anyRequest().authenticated()
-      )
-      // Form login handles the redirect to the login page from the
-      // authorization server filter chain
-      .formLogin(Customizer.withDefaults());
-
-    return http.build();
+        .anyRequest().authenticated())
+      .formLogin(Customizer.withDefaults())
+      .build();
   }
 
   @Bean
@@ -131,7 +143,7 @@ public class SecurityConfigV2 {
   }
 
   @Bean
-  public JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
+  JwtDecoder jwtDecoder(JWKSource<SecurityContext> jwkSource) {
     return OAuth2AuthorizationServerConfiguration.jwtDecoder(jwkSource);
   }
 
@@ -144,4 +156,7 @@ public class SecurityConfigV2 {
   UserDetailsService userDetailsService(UserRepository userRepository) {
     return new JpaUserDetailsService(userRepository);
   }
+
+//  JwtAuthenticationConverter jwtAuthenticationConverter() {
+//  }
 }
