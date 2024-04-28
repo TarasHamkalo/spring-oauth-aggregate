@@ -11,7 +11,6 @@ dependencies {
 
     runtimeOnly "org.postgresql:postgresql:$postgresqlVersion"
 
-    implementation "com.github.dozermapper:dozer-core:$dozerMapperVersion"
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'

@@ -9,6 +9,9 @@ import com.nimbusds.jose.proc.SecurityContext;
 import dev.taras.hamkalo.spring.auth.oauth.config.util.KeyGenerator;
 import dev.taras.hamkalo.spring.auth.oauth.repository.UserRepository;
 import dev.taras.hamkalo.spring.auth.oauth.security.service.JpaUserDetailsService;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -16,13 +19,13 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
-import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
@@ -32,7 +35,8 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -41,13 +45,24 @@ import java.security.KeyPair;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.Map;
 import java.util.UUID;
 
+/*
+  Almost whole this configuration can be done in properties file
+ */
 @Configuration
 @EnableWebSecurity
-public class SecurityConfigV2 {
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class SecurityConfig {
+
+  @Value("${oauth.client.main.id}")
+  String clientId;
+
+  @Value("${oauth.client.main.secret}")
+  String clientSecret;
+
+  @Value("${oauth.client.main.uri}")
+  String clientRedirect;
 
   @Bean
   @Order(1)
@@ -56,22 +71,8 @@ public class SecurityConfigV2 {
 
     // Create basic Open id scopes, so that i should not create them
     // also creates a resource server endpoints which should be secured
-
     http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-      .oidc(oidcConfigurer -> oidcConfigurer
-        // /userinfo endpoint response configuration
-        .userInfoEndpoint(configurer -> configurer
-//          .userInfoMapper(context ->
-//            new OidcUserInfo(Map.of("name", context.getAuthentication().getName()))
-//          )
-          .userInfoMapper(context -> {
-            if (context.getAuthentication().getPrincipal() instanceof JwtAuthenticationToken token) {
-              return new OidcUserInfo(token.getToken().getClaims());
-            }
-
-            return new OidcUserInfo(Collections.emptyMap());
-          })
-        ));
+      .oidc(Customizer.withDefaults());
 
     http
       // Redirect to the login page when not authenticated from the
@@ -83,6 +84,7 @@ public class SecurityConfigV2 {
         ))
       .oauth2ResourceServer(resourceServer -> resourceServer
         .jwt(Customizer.withDefaults()));
+
 
     return http.build();
   }
@@ -99,22 +101,20 @@ public class SecurityConfigV2 {
 
   @Bean
   RegisteredClientRepository registeredClientRepository() {
-    RegisteredClient oidcClient = RegisteredClient.withId(UUID.randomUUID().toString())
-
-      .clientId("client")
-      .clientSecret(passwordEncoder().encode("secret"))
+    var oidcClient = RegisteredClient.withId(UUID.randomUUID().toString())
+      .clientId(clientId)
+      .clientSecret(passwordEncoder().encode(clientSecret))
+      .redirectUri(clientRedirect)
       .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
       .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
       .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-      .redirectUri("https://springone.io/authorized")
-      .scope("write")
       .scope(OidcScopes.OPENID)
       .scope(OidcScopes.PROFILE)
       .clientSettings(ClientSettings.builder()
         .requireProofKey(false)
         .requireAuthorizationConsent(true).build())
       .tokenSettings(TokenSettings.builder()
-        .accessTokenTimeToLive(Duration.ofMinutes(5))
+        .accessTokenTimeToLive(Duration.ofHours(5))
         .reuseRefreshTokens(false)
         .build())
       .build();
@@ -122,6 +122,18 @@ public class SecurityConfigV2 {
     return new InMemoryRegisteredClientRepository(oidcClient);
   }
 
+
+  @Bean
+  OAuth2TokenCustomizer<JwtEncodingContext> oAuth2TokenCustomizer() {
+    return context -> {
+      var authorities = context.getPrincipal().getAuthorities();
+
+      context.getClaims().claim("username", context.getPrincipal().getName());
+      context.getClaims().claim(
+        "authorities", authorities.stream().map(GrantedAuthority::getAuthority).toList()
+      );
+    };
+  }
 
   @Bean
   public AuthorizationServerSettings authorizationServerSettings() {
@@ -156,7 +168,4 @@ public class SecurityConfigV2 {
   UserDetailsService userDetailsService(UserRepository userRepository) {
     return new JpaUserDetailsService(userRepository);
   }
-
-//  JwtAuthenticationConverter jwtAuthenticationConverter() {
-//  }
 }
