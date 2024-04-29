@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,11 +41,15 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.security.KeyPair;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 
 /*
@@ -75,8 +80,11 @@ public class SecurityConfig {
       .oidc(Customizer.withDefaults());
 
     http
+
       // Redirect to the login page when not authenticated from the
       // authorization endpoint
+      .cors(conf -> conf
+        .configurationSource(corsConfigurationSource()))
       .exceptionHandling(exceptions -> exceptions
         .defaultAuthenticationEntryPointFor(
           new LoginUrlAuthenticationEntryPoint("/login"),
@@ -84,6 +92,9 @@ public class SecurityConfig {
         ))
       .oauth2ResourceServer(resourceServer -> resourceServer
         .jwt(Customizer.withDefaults()));
+//      .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
+//        .sessionConcurrency(customizer -> customizer
+//          .sessionRegistry(
 
 
     return http.build();
@@ -93,6 +104,8 @@ public class SecurityConfig {
   @Order(2)
   public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
     return http
+      .cors(conf -> conf
+        .configurationSource(corsConfigurationSource()))
       .authorizeHttpRequests(authorize -> authorize
         .requestMatchers("/login").permitAll()
         .requestMatchers("/js/**").permitAll()
@@ -102,6 +115,17 @@ public class SecurityConfig {
       .formLogin(configurer -> configurer
         .loginPage("/login"))
       .build();
+  }
+
+  @Bean
+  CorsConfigurationSource corsConfigurationSource() {
+    var corsConfiguration = new CorsConfiguration();
+    corsConfiguration.setAllowedOrigins(List.of("http://localhost:8080"));
+
+    var corsConfigurationSource = new UrlBasedCorsConfigurationSource();
+    corsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
+
+    return corsConfigurationSource;
   }
 
   @Bean
