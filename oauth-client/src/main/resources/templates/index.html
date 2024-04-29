@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <style>
+        button {
+            all: unset;
+        }
+
+        .btn {
+            background: lightcoral;
+            border-radius: 2vw;
+            width: 10vw;
+            height: 10vh;
+            position: absolute;
+            left: 45vw;
+            top: 45vh;
+        }
+    </style>
+
+</head>
+<body>
+    <button class="btn" id="go"></button>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script th:src="@{/js/scripts.js}"></script>
+</section>
+</body>
+</html>
