@@ -94,8 +94,13 @@ public class SecurityConfig {
   public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
     return http
       .authorizeHttpRequests(authorize -> authorize
+        .requestMatchers("/login").permitAll()
+        .requestMatchers("/js/**").permitAll()
+        .requestMatchers("/css/**").permitAll()
+        .requestMatchers("/user").permitAll()
         .anyRequest().authenticated())
-      .formLogin(Customizer.withDefaults())
+      .formLogin(configurer -> configurer
+        .loginPage("/login"))
       .build();
   }
 

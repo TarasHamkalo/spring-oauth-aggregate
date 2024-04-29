@@ -7,11 +7,15 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Optional;
 
-@RestController
+@Controller
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserController {
@@ -20,18 +24,20 @@ public class UserController {
 
   PasswordEncoder passwordEncoder;
 
-  @PutMapping("/user")
-  public void createUser(@RequestBody UserCreateRequest userCreateRequest) {
-    if (userRepository.existsByUsername(userCreateRequest.username())) {
+  @PostMapping("/user")
+  public String createUser(@ModelAttribute UserCreateRequest userCreateRequest) {
+    if (userRepository.existsByUsername(userCreateRequest.getUsername())) {
       throw new IllegalArgumentException("User exists");
     }
 
     userRepository.save(
       User.builder()
-        .username(userCreateRequest.username())
-        .password(passwordEncoder.encode(userCreateRequest.password()))
+        .username(userCreateRequest.getUsername())
+        .password(passwordEncoder.encode(userCreateRequest.getUsername()))
         .build()
     );
+
+    return "forward:login";
   }
 
   @GetMapping("/user/{username}")
