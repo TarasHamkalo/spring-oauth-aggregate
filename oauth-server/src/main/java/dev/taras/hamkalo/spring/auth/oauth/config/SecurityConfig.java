@@ -19,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -121,7 +120,10 @@ public class SecurityConfig {
   CorsConfigurationSource corsConfigurationSource() {
     var corsConfiguration = new CorsConfiguration();
     corsConfiguration.setAllowedOrigins(List.of("http://localhost:8080"));
+    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+    corsConfiguration.setAllowedHeaders(List.of("authorization"));
 
+    corsConfiguration.setAllowCredentials(true);
     var corsConfigurationSource = new UrlBasedCorsConfigurationSource();
     corsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
 
