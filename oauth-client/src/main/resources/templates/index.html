@@ -4,7 +4,6 @@
     <meta charset="UTF-8"/>
     <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
     <style>
         button {
             all: unset;
@@ -23,9 +22,14 @@
 
 </head>
 <body>
-    <button class="btn" id="go"></button>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script th:src="@{/js/scripts.js}"></script>
+
 </section>
 </body>
+    <label style="background: black" id="data"></label>
+    <br>
+    <button class="btn" id="go"></button>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script th:src="@{/js/constants.js}"></script>
+    <script th:src="@{/js/scripts.js}"></script>
 </html>
