@@ -10,6 +10,7 @@ import dev.taras.hamkalo.spring.auth.oauth.config.util.KeyGenerator;
 import dev.taras.hamkalo.spring.auth.oauth.repository.UserRepository;
 import dev.taras.hamkalo.spring.auth.oauth.security.service.JpaUserDetailsService;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -68,6 +69,9 @@ public class SecurityConfig {
   @Value("${oauth.client.main.uri}")
   String clientRedirect;
 
+  @Value("${oauth.client.main.host}")
+  String clientHost;
+
   @Bean
   @Order(1)
   SecurityFilterChain oauthEndpointsFilterChain(HttpSecurity http) throws Exception {
@@ -82,19 +86,15 @@ public class SecurityConfig {
 
       // Redirect to the login page when not authenticated from the
       // authorization endpoint
-      .cors(conf -> conf
-        .configurationSource(corsConfigurationSource()))
       .exceptionHandling(exceptions -> exceptions
         .defaultAuthenticationEntryPointFor(
           new LoginUrlAuthenticationEntryPoint("/login"),
           new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
         ))
+      .cors(conf -> conf
+        .configurationSource(corsConfigurationSource()))
       .oauth2ResourceServer(resourceServer -> resourceServer
         .jwt(Customizer.withDefaults()));
-//      .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
-//        .sessionConcurrency(customizer -> customizer
-//          .sessionRegistry(
-
 
     return http.build();
   }
@@ -119,7 +119,7 @@ public class SecurityConfig {
   @Bean
   CorsConfigurationSource corsConfigurationSource() {
     var corsConfiguration = new CorsConfiguration();
-    corsConfiguration.setAllowedOrigins(List.of("http://localhost:8080"));
+    corsConfiguration.setAllowedOrigins(List.of(clientHost));
     corsConfiguration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
     corsConfiguration.setAllowedHeaders(List.of("authorization"));
     corsConfiguration.setMaxAge(30L);
