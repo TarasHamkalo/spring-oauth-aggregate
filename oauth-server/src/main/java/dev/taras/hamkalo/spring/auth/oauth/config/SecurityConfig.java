@@ -122,6 +122,7 @@ public class SecurityConfig {
     corsConfiguration.setAllowedOrigins(List.of("http://localhost:8080"));
     corsConfiguration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
     corsConfiguration.setAllowedHeaders(List.of("authorization"));
+    corsConfiguration.setMaxAge(30L);
 
     corsConfiguration.setAllowCredentials(true);
     var corsConfigurationSource = new UrlBasedCorsConfigurationSource();
