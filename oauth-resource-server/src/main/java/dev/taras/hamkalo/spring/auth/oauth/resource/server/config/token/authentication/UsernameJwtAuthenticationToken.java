@@ -1,4 +1,4 @@
-package dev.taras.hamkalo.spring.auth.oauth.resource.server.security.token.authentication;
+package dev.taras.hamkalo.spring.auth.oauth.resource.server.config.token.authentication;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -23,8 +23,8 @@ public class UsernameJwtAuthenticationToken extends JwtAuthenticationToken {
 
   @Builder
   public UsernameJwtAuthenticationToken(
-    Jwt jwt, Collection<? extends GrantedAuthority> authorities, String username
-  ) {
+    Jwt jwt, Collection<? extends GrantedAuthority> authorities, String username) {
+
     super(jwt, authorities);
     this.username = username;
   }
