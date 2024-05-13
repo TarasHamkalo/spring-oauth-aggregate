@@ -5,31 +5,28 @@
     <meta content="IE=edge" http-equiv="X-UA-Compatible"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <style>
-        button {
-            all: unset;
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
         }
 
-        .btn {
+        button {
             background: lightcoral;
-            border-radius: 2vw;
+            cursor: pointer;
             width: 10vw;
-            height: 10vh;
-            position: absolute;
-            left: 45vw;
-            top: 45vh;
+            height: 5vw;
         }
+
     </style>
 
 </head>
-<body>
-
-</section>
+<body >
+    <h1 th:text="${authenticatedRequestResult}"></h1>
+    <form method="POST" action="/authentication-required">
+        <button type="submit" value="Make request"></button>
+    </form>
 </body>
-    <label style="background: black" id="data"></label>
-    <br>
-    <button class="btn" id="go"></button>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script th:src="@{/js/constants.js}"></script>
-    <script th:src="@{/js/scripts.js}"></script>
 </html>
