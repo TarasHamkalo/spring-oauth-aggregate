@@ -1,4 +1,4 @@
-rootProject.name = 'spring'
+rootProject.name = 'spring-security-oauth2'
 
 [
 //    'auth-server-api-key',
